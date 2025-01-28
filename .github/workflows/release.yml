@@ -1,33 +1,58 @@
-name: Manual Release
+name: Create Release
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version number (e.g., 1.0.0)'
+        description: 'Version tag (e.g., v1.0.0)'
         required: true
         type: string
 
 jobs:
-  release:
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.x'
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.x'
 
-      - name: Run Tests
-        run: go test ./...
+    - name: Get dependencies
+      run: go mod download
 
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.event.inputs.version }}
-          release_name: Release v${{ github.event.inputs.version }}
-          draft: false
-          prerelease: false
+    - name: Run tests
+      run: go test -v ./...
+
+  create-release:
+    name: Create Release
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.event.inputs.version }}
+        release_name: Release ${{ github.event.inputs.version }}
+        draft: false
+        prerelease: false
+        body: |
+          Release ${{ github.event.inputs.version }}
+          
+          ## What's Changed
+          * Please update these release notes manually
+          
+          ## Installation
+          ```bash
+          go get github.com/crazywolf132/termachroma@${{ github.event.inputs.version }}
+          ```
