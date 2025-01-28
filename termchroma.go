@@ -6,8 +6,16 @@ import (
 	"strings"
 )
 
-// Reset is the ANSI code for resetting colors to default.
-const Reset = "\033[0m"
+// Some helpful default ansi codes
+const (
+	Bold      = "\033[1m"
+	Dim       = "\033[2m"
+	Underline = "\033[4m"
+	Blink     = "\033[5m"
+	Reverse   = "\033[7m"
+	Hidden    = "\033[8m"
+	Reset     = "\033[0m"
+)
 
 // HexToRGB converts a 3- or 6-digit hex color (#RRGGBB or #RGB) into integer RGB components (0-255).
 // It ignores a leading "#" if present. Returns an error if the string is invalid.
